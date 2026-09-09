@@ -1,0 +1,16 @@
+# 密钥
+.env
+.env.*
+!.env.example
+
+# 开发环境和缓存
+.idea/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 可重新生成的数据
+chroma_db/
+logs/
+md5.txt

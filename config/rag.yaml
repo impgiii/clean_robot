@@ -1,0 +1,2 @@
+chat_model: qwen3.8-27b
+embedding_model: text-embedding-v4

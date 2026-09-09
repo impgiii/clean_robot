@@ -1,0 +1,18 @@
+# 向量库
+collection: robot_service
+persist_directory: chroma_db
+
+# 知识库和去重记录
+data_path: data
+md5_hex_store: md5.txt
+allow_types: ["pdf", "txt"]
+
+# 检索时的片段
+k: 3
+
+# 文本切分
+chunk_size: 500
+chunk_overlap: 50
+separator: ["\n\n", "\n", "。","，","！","？",","," ",""]
+
+

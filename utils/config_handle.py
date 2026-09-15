@@ -16,3 +16,4 @@ def load_config(filename) -> dict:
 
 chroma_conf = load_config("chroma.yaml")
 rag_conf = load_config("rag.yaml")
+agent_conf = load_config("agent.yaml")

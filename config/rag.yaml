@@ -1,2 +1,3 @@
 chat_model: qwen3.8-27b
 embedding_model: text-embedding-v4
+rag_prompt_path: prompts/rag_prompt.txt

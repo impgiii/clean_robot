@@ -43,4 +43,42 @@ class VectorStoreService:
                     if line.strip()
                 }
 
+        files = listdir_with_allowed_type(data_path,chroma_conf['allow_types'])
 
+        for file_path in files:
+            file_md5 = get_file_md5(file_path)
+
+            if file_md5 in processed_md5:
+                print(f"该文档已入库：{file_path}")
+                continue
+
+            print(f"准备加载文件：{file_path}")
+
+            if file_path.lower().endswith(".pdf"):
+                documents = pdf_loader(file_path)
+            elif file_path.lower().endswith(".txt"):
+                documents = txt_loader(file_path)
+            else:
+                continue
+
+            print(f"文件 {file_path} 加载 {len(documents)} 个文档")
+
+            chunks = self.splitter.split_documents(documents)
+
+            chunks = [
+                chunk for chunk in chunks
+                if chunk.page_content.strip()
+            ]
+
+            if not chunks:
+                print(f"没有可入库的正文，跳过：{file_path}")
+                continue
+
+            print(f"切分完成，共 {len(chunks)} 个片段")
+
+            self.vector_store.add_documents(chunks)
+
+            with md5_path.open("a",encoding="utf-8") as f:
+                f.write(f"{file_md5}\n")
+            processed_md5.add(file_md5)
+            print(f"文件 {file_path} 入库完成")

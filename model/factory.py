@@ -1,8 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI,OpenAIEmbeddings
 from utils.config_handle import rag_conf
 
 load_dotenv()
@@ -27,6 +26,9 @@ class EmbeddingModelFactory(BaseModelFactory):
             model = rag_conf['embedding_model'],
             api_key = os.getenv("OPENAI_API_KEY"),
             base_url = os.getenv("OPENAI_BASE_URL"),
+            check_embedding_ctx_length=False,
+            chunk_size = 10,
+
         )
 
 chat_model = ChatModelFactory().generator()

@@ -1,16 +1,18 @@
-# 这是一个示例 Python 脚本。
-
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
+from rag.vector_store import VectorStoreService
 
 
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
+if __name__ == "__main__":
+    service = VectorStoreService()
 
+    # 准备知识库
+    service.load_doc()
 
-# 按装订区域中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    # 检索相关资料
+    retriever = service.get_retriever()
+    documents = retriever.invoke("扫地机器人不出水怎么办？")
 
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+    print(f"\n检索到 {len(documents)} 个片段")
+
+    for index, doc in enumerate(documents, start=1):
+        print(f"\n--- 资料 {index} ---")
+        print(doc.page_content)

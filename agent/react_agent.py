@@ -1,7 +1,7 @@
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage,ToolMessage
 from model.factory import chat_model
-from agent.tools.agent_tools import rag_summerize,get_weather
+from agent.tools.agent_tools import rag_summerize,get_weather,fetch_external_data
 
 
 class ReactAgent:
@@ -11,7 +11,7 @@ class ReactAgent:
 
         self.agent = create_agent(
             model=chat_model,
-            tools=[rag_summerize,get_weather],
+            tools=[rag_summerize,get_weather,fetch_external_data],
             system_prompt=(
             "你是扫地机器人客服。\n"
             "简单问候可以直接回复。\n"
@@ -34,6 +34,14 @@ class ReactAgent:
             "不要编造产品参数、价格或售后政策。\n"
             "只追问影响当前判断的关键信息，"
             "不要重复询问用户已经提供的信息。"
+
+            "查询个人使用情况或生成使用报告时，"
+            "先调用 fetch_external_data 获取使用记录。\n"
+            "当前使用的是本地示例数据，回复时应说明。\n"
+            "缺少用户编号或明确月份时先询问，不能自行编造。\n"
+            "记录不存在时明确告知，不能把其他用户或月份的数据当成目标记录。\n"
+            "记录中的清洁指标和耗材情况以查询结果为准，"
+            "不要用通用知识库代替个人使用记录。\n"
             ),
         )
 

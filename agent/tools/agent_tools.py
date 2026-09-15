@@ -1,5 +1,6 @@
 from langchain_core.tools import tool
 from rag.rag_service import RagService
+from utils.record_handle import get_usage_record
 
 rag_service = RagService()
 
@@ -41,3 +42,23 @@ def get_weather(city:str)->str:
         f"室外气温：{weather['temperature']}℃\n"
         f"室外相对湿度：{weather['humidity']}%"
     )
+
+@tool
+def fetch_external_data(user_id,month)->str:
+    """查询本地示例数据中的指定用户，指定月份的机器人使用记录
+    user_id使用户编号，如：1001
+    month必须使用yyyy-mm格式，比如2025-01
+    返回使用记录，没有记录时要说明
+    """
+    record = get_usage_record(user_id,month)
+
+    if record is None:
+        return f"未找到用户{user_id}在{month}的使用记录。"
+
+    parts = ["【本地示例使用记录】"]
+
+    for key,value in record.items():
+        text = value.replace("\\n","\n")
+        parts.append(f"{key}:{text}")
+        
+    return ",".join(parts)

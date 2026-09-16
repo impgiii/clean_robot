@@ -44,7 +44,7 @@ def get_weather(city:str)->str:
     )
 
 @tool
-def fetch_external_data(user_id,month)->str:
+def fetch_external_data(user_id:str,month:str)->str:
     """查询本地示例数据中的指定用户，指定月份的机器人使用记录
     user_id使用户编号，如：1001
     month必须使用yyyy-mm格式，比如2025-01
@@ -61,4 +61,12 @@ def fetch_external_data(user_id,month)->str:
         text = value.replace("\\n","\n")
         parts.append(f"{key}:{text}")
         
-    return ",".join(parts)
+    return "\n".join(parts)
+
+@tool
+def fill_context_for_report()->str:
+    """
+    用户明确要求生成使用报告，且已经查到目标记录后，标记进入报告模式。
+    仅仅查询某个指标时不需要调用。
+    """
+    return "已经进入了报告模式，请根据目标使用记录生成报告。"

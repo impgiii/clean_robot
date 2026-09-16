@@ -1,7 +1,9 @@
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage,ToolMessage
 from model.factory import chat_model
-from agent.tools.agent_tools import rag_summerize,get_weather,fetch_external_data
+from agent.tools.agent_tools import rag_summerize,get_weather,fetch_external_data,fill_context_for_report
+from agent.tools.middleware import report_prompt_switch
+
 
 
 class ReactAgent:
@@ -11,7 +13,9 @@ class ReactAgent:
 
         self.agent = create_agent(
             model=chat_model,
-            tools=[rag_summerize,get_weather,fetch_external_data],
+            tools=[rag_summerize,get_weather,fetch_external_data,fill_context_for_report],
+            middleware=[report_prompt_switch] ,
+
             system_prompt=(
             "你是扫地机器人客服。\n"
             "简单问候可以直接回复。\n"
@@ -42,36 +46,78 @@ class ReactAgent:
             "记录不存在时明确告知，不能把其他用户或月份的数据当成目标记录。\n"
             "记录中的清洁指标和耗材情况以查询结果为准，"
             "不要用通用知识库代替个人使用记录。\n"
+
+            "用户明确要求生成使用报告时，先查询目标用户和月份的记录。\n"
+            "查询到有效记录后，调用 fill_context_for_report，"
+            "然后按照报告要求生成回答。\n"
+            "缺少用户编号或月份时先追问，记录不存在时不进入报告模式。\n"
+            "只查询某个指标时，直接根据记录回答，不必进入报告模式。\n"
             ),
         )
 
-    def execute(self,question,debug:bool=False)->str:
+    def execute(self,question,debug:bool=False):
         question = question.strip()
         if not question:
-            return "请输入你的问题。"
-
-        history_len = len(self.messages)
+            yield "请输入你的问题。"
+            return
 
         input_messages = self.messages+[
             {"role":"user","content":question},
         ]
 
-        res = self.agent.invoke({
-            "messages":input_messages
-        })
+        final_state = None
+        last_run = None
+        draft = ""
 
-        self.messages = res["messages"]
+        for mode,data in self.agent.stream(
+        {"messages":input_messages},
+            stream_mode=["messages","values"],
+        ):
+            if mode == "values":
+                final_state = data
+                last_message = data["messages"][-1]
 
-        if debug:
-            new_messages =self.messages[history_len:]
-            for message in new_messages:
-                if isinstance(message,AIMessage):
-                    for call in message.tool_calls:
-                        print(f"[调用工具] {call["name"]}")
-                        print(f"[工具参数] {call["args"]}")
-                elif isinstance(message,ToolMessage):
-                    print(f"[工具返回] {message.name}")
-        return self.messages[-1].text
+                if (
+                    isinstance(last_message,AIMessage)
+                    and last_message.tool_calls
+                ):
+                    draft = ""
+                    last_run = None
+                    yield ""
+
+                continue
+
+            chunk,metadata = data
+
+            if metadata.get("langgraph_node") != "model":
+                continue
+
+            run = (metadata.get("langgraph_step"),chunk.id)
+            if run != last_run:
+                draft = ""
+                last_run = run
+
+            if chunk.text:
+                draft += chunk.text
+                yield draft
+
+        if final_state is None:
+            raise RuntimeError("未收到执行结果")
+
+        final_message = final_state["messages"][-1]
+
+        if (
+            not isinstance(final_message,AIMessage)
+            or final_message.tool_calls
+            or not final_message.text.strip()
+        ):
+            raise RuntimeError("未获得完整的文字回复")
+
+        self.messages = final_state["messages"]
+
+        yield final_message.text
+
+
 
     def clear_history(self):
         self.messages = []

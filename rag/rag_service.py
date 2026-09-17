@@ -1,7 +1,7 @@
 from rag.vector_store import VectorStoreService
 from model.factory import chat_model
 from utils.config_handle import rag_conf
-from utils.path_tool import get_abs_path
+from utils.prompt_handle import load_prompt
 
 
 class RagService:
@@ -10,8 +10,7 @@ class RagService:
         self.retriever = self.vector_store_service.get_retriever()
         self.chat_model = chat_model
 
-        prompt_path = get_abs_path(rag_conf['rag_prompt_path'])
-        self.prompt_template = prompt_path.read_text(encoding='utf-8')
+        self.prompt_template = load_prompt(rag_conf['rag_prompt_path'])
 
     def answer(self,question):
         question = question.strip()

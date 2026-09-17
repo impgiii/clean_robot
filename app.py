@@ -1,4 +1,4 @@
-import logging
+from utils.logger_handle import logger
 import streamlit as st
 from agent.react_agent import ReactAgent
 
@@ -51,7 +51,7 @@ if question:
 
         except Exception:
             placeholder.empty()
-            logging.exception("客服流式回答失败")
+            logger.exception("客服流式回答失败")
             st.error("本次回答未完成，请稍后重试。")
 
         else:

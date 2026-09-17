@@ -1,2 +1,4 @@
 external_data_path: data/external/records.csv
 report_prompt_path: prompts/report_prompt.txt
+agent_prompt_path: prompts/agent_prompt.txt
+

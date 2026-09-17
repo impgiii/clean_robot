@@ -1,6 +1,7 @@
 from langchain_core.tools import tool
 from rag.rag_service import RagService
 from utils.record_handle import get_usage_record
+from utils.weather_service import get_current_weather
 
 rag_service = RagService()
 
@@ -14,34 +15,15 @@ def rag_summerize(question:str)->str:
 
 
 @tool
-def get_weather(city:str)->str:
+def get_weather(city: str, region: str = "", country_code: str = "") -> str:
+    """查询城市当前室外温度和湿度，返回地点、数据时间和来源。
+    city 只填写城市名，例如杭州；已知省份可填 region，例如浙江。
+    已知国家可填两位 country_code，例如 CN；信息未知时留空。
+    重名城市需要向用户确认；失败时没有天气数据，不可编造。
+    天气来自 Open-Meteo 天气模型，不代表室内实测或长期气候。
     """
-    获取指定城市的模拟温度和湿度，用于演示环境相关的机器人咨询
-    city为用户指定的城市名称
-    返回的是测试数据，不代表真实天气
-    """
-    city = city.strip().removesuffix("市")
+    return get_current_weather(city, region, country_code)
 
-    weather_data = {
-        "北京":{"temperature":18,"humidity":30},
-        "上海":{"temperature":25,"humidity":90},
-        "广州":{"temperature":30,"humidity":70},
-    }
-
-    weather = weather_data.get(city)
-
-    if weather is None:
-        return (
-            f"未提供{city}的模拟天气数据。"
-            "请向用户询问相关天气数据，不可以自行编造。"
-        )
-
-    return (
-        f"【模拟天气，不代表实时情况】\n"
-        f"城市：{city}\n"
-        f"室外气温：{weather['temperature']}℃\n"
-        f"室外相对湿度：{weather['humidity']}%"
-    )
 
 @tool
 def fetch_external_data(user_id:str,month:str)->str:

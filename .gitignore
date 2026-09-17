@@ -14,3 +14,6 @@ venv/
 chroma_db/
 logs/
 md5.txt
+
+# 本机对话记录
+data/conversations.sqlite3*

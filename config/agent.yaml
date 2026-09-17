@@ -1,4 +1,5 @@
 external_data_path: data/external/records.csv
 report_prompt_path: prompts/report_prompt.txt
 agent_prompt_path: prompts/agent_prompt.txt
+conversation_db_path: data/conversations.sqlite3
 
